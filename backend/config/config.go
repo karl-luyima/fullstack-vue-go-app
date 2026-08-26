@@ -1,6 +1,3 @@
-// Package config reads settings from environment variables (and, in
-// development, from a .env file) so the rest of the app never calls
-// os.Getenv directly.
 package config
 
 import (
@@ -18,11 +15,11 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	DBSSLMode  string
+
+	JWTSecret string
 }
 
 func Load() *Config {
-	// Ignore the error: in production there's no .env file, and that's fine —
-	// real environment variables are used instead.
 	_ = godotenv.Load()
 
 	return &Config{
@@ -34,6 +31,8 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", "postgres"),
 		DBName:     getEnv("DB_NAME", "fullstack_app"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+
+		JWTSecret: getEnv("JWT_SECRET", "insecure-dev-secret-change-me"),
 	}
 }
 
