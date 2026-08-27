@@ -13,6 +13,7 @@ import (
 	"github.com/karl-luyima/fullstack-vue-go-app/backend/repositories"
 	"github.com/karl-luyima/fullstack-vue-go-app/backend/services"
 	"github.com/karl-luyima/fullstack-vue-go-app/backend/utils"
+	"github.com/karl-luyima/fullstack-vue-go-app/backend/ws"
 )
 
 func main() {
@@ -32,13 +33,18 @@ func main() {
 
 	authService := services.NewAuthService(userRepo, jwtManager)
 	userService := services.NewUserService(userRepo)
+	analyticsService := services.NewAnalyticsService(db)
 
-	authController := controllers.NewAuthController(authService)
+	hub := ws.NewHub()
+	go hub.Run()
+
+	authController := controllers.NewAuthController(authService, hub)
 	userController := controllers.NewUserController(userService)
+	analyticsController := controllers.NewAnalyticsController(analyticsService)
+	wsController := controllers.NewWSController(hub, jwtManager)
 
 	router := gin.Default()
-	router := gin.Default()
-    router.Use(middleware.CORS())
+	router.Use(middleware.CORS())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
@@ -56,6 +62,12 @@ func main() {
 	users := api.Group("/users")
 	users.Use(middleware.RequireAuth(jwtManager))
 	users.GET("/me", userController.Me)
+
+	analytics := api.Group("/analytics")
+	analytics.Use(middleware.RequireAuth(jwtManager))
+	analytics.GET("/signups", analyticsController.SignupsByDay)
+
+	router.GET("/ws", wsController.Handle)
 
 	router.Run(":" + cfg.AppPort)
 }

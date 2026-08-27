@@ -5,14 +5,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/karl-luyima/fullstack-vue-go-app/backend/services"
+	"github.com/karl-luyima/fullstack-vue-go-app/backend/ws"
 )
 
 type AuthController struct {
 	authService services.AuthService
+	hub         *ws.Hub
 }
 
-func NewAuthController(authService services.AuthService) *AuthController {
-	return &AuthController{authService: authService}
+func NewAuthController(authService services.AuthService, hub *ws.Hub) *AuthController {
+	return &AuthController{authService: authService, hub: hub}
 }
 
 func (ctrl *AuthController) Register(c *gin.Context) {
@@ -27,6 +29,9 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Tell every connected browser that a new user just joined.
+	ctrl.hub.Broadcast <- []byte(`{"event":"new_signup","name":"` + result.User.Name + `"}`)
 
 	c.JSON(http.StatusCreated, result)
 }
