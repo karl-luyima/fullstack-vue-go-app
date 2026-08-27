@@ -37,6 +37,8 @@ func main() {
 	userController := controllers.NewUserController(userService)
 
 	router := gin.Default()
+	router := gin.Default()
+    router.Use(middleware.CORS())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
