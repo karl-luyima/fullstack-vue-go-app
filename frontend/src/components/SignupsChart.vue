@@ -47,11 +47,13 @@ const chartOptions = {
 </script>
 
 <template>
-  <div class="rounded-xl bg-white p-6 shadow-sm">
-    <h2 class="mb-4 text-lg font-semibold text-slate-900">Signups (last 30 days)</h2>
+  <div class="rounded-xl border border-slate-200 bg-white p-5">
+    <p class="mb-3 text-sm font-medium text-slate-500">Signups, last 30 days</p>
 
     <p v-if="isLoading" class="text-sm text-slate-500">Loading...</p>
     <p v-else-if="points.length === 0" class="text-sm text-slate-500">No signups yet.</p>
-    <Bar v-else :data="chartData" :options="chartOptions" />
+    <div v-else class="relative h-48">
+      <Bar :data="chartData" :options="chartOptions" />
+    </div>
   </div>
 </template>
